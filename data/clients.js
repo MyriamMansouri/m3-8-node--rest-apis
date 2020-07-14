@@ -1,4 +1,4 @@
-const clients = [
+let clients = [
   {
     id: '59761c23b30d971669fb42ff',
     isActive: true,
