@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 
 let { clients } = require("./data/clients");
 let { words } = require("./data/words");
-let guess
+let guess;
 class Client {
   constructor(id, name, email) {
     this.id = id;
@@ -61,9 +61,11 @@ express()
   .post("/clients/", (req, res) => {
     const name = req.body.name;
     const email = req.body.email;
-    
+
     try {
-      const client = clients.find((client) => client.name === name || client.email === email);
+      const client = clients.find(
+        (client) => client.name === name || client.email === email
+      );
       if (!client) {
         const newClient = new Client(uuidv4(), name, email);
         clients.push(newClient);
@@ -92,22 +94,26 @@ express()
     }
   })
 
+
+  // Hangman API
+
   .get("/hangman/word", (req, res) => {
     const index = Math.floor(Math.random() * words.length);
     const { id, letterCount } = words[index];
-    guess = new Array(Number(letterCount)).fill(false)
-    console.log(guess)
-    res.status(200).json({ status: 200, id: id, letterCount : letterCount });
+    guess = new Array(Number(letterCount)).fill(false);
+    res.status(200).json({ status: 200, id: id, letterCount: letterCount });
   })
 
-  .get("/hangman/guess/:id/:letter", (req, res) => {
-    const { id, letter } = req.params
-    //guess.includes(letter) ? words
-    //res.status(200).json({ status: 200, guess: guess });
+    .get("/hangman/guess/:id/:letter", (req, res) => {
+    const { id, letter } = req.params;
+    const myWord = words.find((word) => word.id === id.toString()).word.split("")
+ 
+    for (let i = 0; i < guess.length; i++) {
+      if (myWord[i] === letter) guess[i] = true;
+    }
+
+    res.status(200).json({ status: 200, guess: guess });
   })
-
-
-  // Hangman API
 
   // General 404 page
   .get("*", (req, res) => {
