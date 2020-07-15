@@ -6,7 +6,8 @@ const morgan = require("morgan");
 const { v4: uuidv4 } = require("uuid");
 
 let { clients } = require("./data/clients");
-
+let { words } = require("./data/words");
+let guess
 class Client {
   constructor(id, name, email) {
     this.id = id;
@@ -20,6 +21,7 @@ class Client {
     this.address = "";
   }
 }
+
 express()
   .use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -57,11 +59,21 @@ express()
 
   //add a new client
   .post("/clients/", (req, res) => {
-    const name = req.body.name
-    const email = req.body.email
-    const client = new Client(uuidv4(), name, email);
-    clients.push(client);
-    res.status(201).json({ status: 201, client: client });
+    const name = req.body.name;
+    const email = req.body.email;
+    
+    try {
+      const client = clients.find((client) => client.name === name || client.email === email);
+      if (!client) {
+        const newClient = new Client(uuidv4(), name, email);
+        clients.push(newClient);
+        res.status(201).json({ status: 201, client: newClient });
+      } else {
+        throw "This client already exists";
+      }
+    } catch (err) {
+      res.status(400).json({ status: 400, error: err });
+    }
   })
 
   .delete("/clients/:id", (req, res) => {
@@ -79,6 +91,23 @@ express()
       res.status(404).json({ status: 404, error: err });
     }
   })
+
+  .get("/hangman/word", (req, res) => {
+    const index = Math.floor(Math.random() * words.length);
+    const { id, letterCount } = words[index];
+    guess = new Array(Number(letterCount)).fill(false)
+    console.log(guess)
+    res.status(200).json({ status: 200, id: id, letterCount : letterCount });
+  })
+
+  .get("/hangman/guess/:id/:letter", (req, res) => {
+    const { id, letter } = req.params
+    //guess.includes(letter) ? words
+    //res.status(200).json({ status: 200, guess: guess });
+  })
+
+
+  // Hangman API
 
   // General 404 page
   .get("*", (req, res) => {
